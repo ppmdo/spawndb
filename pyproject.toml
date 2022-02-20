@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "testdb"
+version = "0.1.0"
+description = ""
+authors = ["Pablo Prieto <pabloprieto@live.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+SQLAlchemy = "^1.4.31"
+alembic = "^1.7.6"
+psycopg2-binary = "^2.9.3"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
