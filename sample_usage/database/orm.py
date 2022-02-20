@@ -21,7 +21,6 @@ client_table = Table(
     Column("id", Integer, primary_key=True),
     Column("first_name", String(100), index=True),
     Column("last_name", String(100), index=True),
-    Column("price", Float),
 )
 
 shopping_order_item_table = Table(
@@ -51,6 +50,6 @@ def start_mappers():
             "client": relationship(
                 model.Client, backref="shopping_orders", order_by=shopping_order_table.c.id
             ),
-            "products": relationship(model.Product, secondary=shopping_order_item_table),
+            "products": relationship(model.Product, secondary=shopping_order_item_table, backref="shopping_orders"),
         },
     )
