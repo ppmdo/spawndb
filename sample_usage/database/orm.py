@@ -39,17 +39,18 @@ shopping_order_table = Table(
 )
 
 
-mapper_registry.map_imperatively(model.Product, product_table)
+def start_mappers():
+    mapper_registry.map_imperatively(model.Product, product_table)
 
-mapper_registry.map_imperatively(model.Client, client_table)
+    mapper_registry.map_imperatively(model.Client, client_table)
 
-mapper_registry.map_imperatively(
-    model.ShoppingOrder,
-    shopping_order_table,
-    properties={
-        "client": relationship(
-            model.Client, backref="shopping_orders", order_by=shopping_order_table.c.id
-        ),
-        "products": relationship(model.Product, secondary=shopping_order_item_table),
-    },
-)
+    mapper_registry.map_imperatively(
+        model.ShoppingOrder,
+        shopping_order_table,
+        properties={
+            "client": relationship(
+                model.Client, backref="shopping_orders", order_by=shopping_order_table.c.id
+            ),
+            "products": relationship(model.Product, secondary=shopping_order_item_table),
+        },
+    )
