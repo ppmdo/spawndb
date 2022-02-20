@@ -3,6 +3,8 @@ from sqlalchemy.orm import registry, relationship
 
 from store import model
 
+_mappers_started = False
+
 mapper_registry = registry()
 metadata = MetaData()
 
@@ -39,17 +41,22 @@ shopping_order_table = Table(
 
 
 def start_mappers():
-    mapper_registry.map_imperatively(model.Product, product_table)
+    global _mappers_started
 
-    mapper_registry.map_imperatively(model.Client, client_table)
+    if _mappers_started is False:
+        mapper_registry.map_imperatively(model.Product, product_table)
 
-    mapper_registry.map_imperatively(
-        model.ShoppingOrder,
-        shopping_order_table,
-        properties={
-            "client": relationship(
-                model.Client, backref="shopping_orders", order_by=shopping_order_table.c.id
-            ),
-            "products": relationship(model.Product, secondary=shopping_order_item_table, backref="shopping_orders"),
-        },
-    )
+        mapper_registry.map_imperatively(model.Client, client_table)
+
+        mapper_registry.map_imperatively(
+            model.ShoppingOrder,
+            shopping_order_table,
+            properties={
+                "client": relationship(
+                    model.Client, backref="shopping_orders", order_by=shopping_order_table.c.id
+                ),
+                "products": relationship(model.Product, secondary=shopping_order_item_table, backref="shopping_orders"),
+            },
+        )
+
+        _mappers_started = True

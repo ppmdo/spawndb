@@ -1,13 +1,19 @@
 from database.config import DATABASE_URL
-import database.connectors as db
+from database.orm import metadata
+
+from testdb import init_test_db, destroy_test_db
 
 from store.model import Client, Product, ShoppingOrder
+from sqlalchemy.orm import sessionmaker
+from database.orm import start_mappers
 
 
 def test_create_client():
     try:
-        db.init_test_db(DATABASE_URL)
-        Session = db.get_sessionmaker_for_engine()
+        db_engine = init_test_db(DATABASE_URL, metadata)
+        start_mappers()
+
+        Session = sessionmaker(db_engine)
 
         client = Client(
             'Some',
@@ -23,13 +29,15 @@ def test_create_client():
             assert isinstance(client.id, int)
 
     finally:
-        db.destroy_test_db(DATABASE_URL)
+        destroy_test_db(DATABASE_URL)
 
 
 def test_create_shopping_cart():
     try:
-        db.init_test_db(DATABASE_URL)
-        Session = db.get_sessionmaker_for_engine()
+        db_engine = init_test_db(DATABASE_URL, metadata)
+        start_mappers()
+
+        Session = sessionmaker(db_engine)
 
         client = Client(
             'Some',
@@ -72,5 +80,4 @@ def test_create_shopping_cart():
             assert product_1.shopping_orders is not None
 
     finally:
-        pass
-        #db.destroy_test_db(DATABASE_URL)
+        destroy_test_db(DATABASE_URL)
