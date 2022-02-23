@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spawndb"
-version = "0.1.12"
+version = "0.1.13"
 description = ""
 authors = ["Pablo Prieto <pabloprieto@live.com>"]
 readme = "README.md"
