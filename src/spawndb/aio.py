@@ -30,7 +30,7 @@ def create_test_database_url(url_to_modify: URL) -> URL:
     return url_to_modify.set(database=url_to_modify.database + "_test")
 
 
-async def init_async_test_db(db_url: URL, metadata: MetaData) -> AsyncEngine:
+async def init_async_test_db(db_url: URL, metadata: MetaData, drop_existing=False) -> AsyncEngine:
     """
     Connects to the configured database temporarily, issues CREATE commands to instantiate a test database,
     disposes the engine and replaces the global engine with the test one.
@@ -43,7 +43,9 @@ async def init_async_test_db(db_url: URL, metadata: MetaData) -> AsyncEngine:
     temp_engine = create_async_engine(db_url)
     test_db_url = create_test_database_url(db_url)
 
-    await drop_db(temp_engine, test_db_url.database)
+    if drop_existing is True:
+        await drop_db(temp_engine, test_db_url.database)
+
     await create_db(temp_engine, test_db_url.database)
 
     _engine = create_async_engine(test_db_url)
