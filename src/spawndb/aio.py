@@ -43,17 +43,19 @@ async def init_async_test_db(db_url: URL, metadata: MetaData, drop_existing=Fals
     temp_engine = create_async_engine(db_url)
     test_db_url = create_test_database_url(db_url)
 
-    if drop_existing is True:
-        await drop_db(temp_engine, test_db_url.database)
+    if _is_started is False:
 
-    await create_db(temp_engine, test_db_url.database)
+        if drop_existing is True:
+            await drop_db(temp_engine, test_db_url.database)
 
-    _engine = create_async_engine(test_db_url)
+        await create_db(temp_engine, test_db_url.database)
 
-    async with _engine.begin() as conn:
-        await conn.run_sync(metadata.create_all)
+        _engine = create_async_engine(test_db_url)
 
-    _is_started = True
+        async with _engine.begin() as conn:
+            await conn.run_sync(metadata.create_all)
+
+        _is_started = True
 
     return _engine
 
@@ -71,6 +73,7 @@ async def destroy_async_test_db(db_url):
 
     if _is_started is True:
         await _engine.dispose()
+        _engine.sync_engine.pool.dispose()
 
         temp_engine = create_async_engine(db_url)
         test_db_url = create_test_database_url(db_url)
