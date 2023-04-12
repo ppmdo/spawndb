@@ -1,10 +1,11 @@
 from typing import *
+from typing import Union
 
-
+import sqlalchemy.exc
 from sqlalchemy.engine.url import URL
-from sqlalchemy import text, MetaData
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
-
+from sqlalchemy import text, MetaData, inspect
+from sqlalchemy.schema import CreateSchema
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncConnection
 
 _engine: Optional[AsyncEngine] = None
 _is_started = False
@@ -30,12 +31,37 @@ def create_test_database_url(url_to_modify: URL) -> URL:
     return url_to_modify.set(database=url_to_modify.database + "_test")
 
 
-async def init_async_test_db(db_url: URL, metadata: MetaData, drop_existing=False) -> AsyncEngine:
+async def schema_exists(conn: AsyncConnection, schema_name: str) -> bool:
+    """
+    Evaluates if a schema is present in the given database.
+
+    Args:
+        conn: AsyncConnection to work with.
+        schema_name: Schema name to test
+
+    Returns:
+        bool
+    """
+    def inner(sync_conn):
+        inspector = inspect(sync_conn)
+        return inspector.dialect.has_schema(sync_conn, schema_name)
+
+    return await conn.run_sync(inner)
+
+
+async def init_async_test_db(db_url: URL, metadata: Union[list[MetaData], MetaData], drop_existing=False) -> AsyncEngine:
     """
     Connects to the configured database temporarily, issues CREATE commands to instantiate a test database,
-    disposes the engine and replaces the global engine with the test one.
+    creates schemas if needed, disposes the engine and replaces the global engine with the test one.
 
-    :return: Reference to the instantiated test engine.
+    Args:
+        db_url: Database URL
+        metadata: Either a single MetaData object or a list of MetaData instances. If a list
+            is passed, create commands will be issued for all objects in all MetaData instances.
+        drop_existing: If set to True, it will DROP the database first.
+
+    Returns:
+        Reference to the instantiated test engine.
     """
     global _engine
     global _is_started
@@ -53,7 +79,15 @@ async def init_async_test_db(db_url: URL, metadata: MetaData, drop_existing=Fals
         _engine = create_async_engine(test_db_url)
 
         async with _engine.begin() as conn:
-            await conn.run_sync(metadata.create_all)
+            if isinstance(metadata, MetaData):
+                metadata = [metadata]
+            for metadata_ in metadata:
+                if not await schema_exists(conn, metadata_.schema):
+                    await conn.execute(
+                        CreateSchema(metadata_.schema)
+                    )
+
+                await conn.run_sync(metadata_.create_all)
 
         _is_started = True
 
