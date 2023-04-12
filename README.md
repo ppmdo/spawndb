@@ -1,10 +1,10 @@
-# TestDB
+# SpawnDB
 
 This is a simple library that helps in the creation of test databases for Python
 projects that use SQLAlchemy.
 
 It's aim it's to seamlessly handle creation of a separate test database, including
-the creation of all schema objects and finally, handling the destruction of the test
+the creation of all schemas, their objects and finally, handling the destruction of the test
 database when it's no longer needed.
 
 # Usage
@@ -19,7 +19,7 @@ your database logics.
 
 ```python
 # Sample usage for Pytest
-from testdb import init_test_db, destroy_test_db
+from spawndb import init_test_db, destroy_test_db
 
 def my_cool_test():
     db_engine = init_test_db(database_url, sqla_metadata)
