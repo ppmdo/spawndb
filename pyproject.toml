@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "spawndb"
-version = "0.1.14"
+version = "0.1.17"
 description = ""
 authors = ["Pablo Prieto <pabloprieto@live.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-SQLAlchemy = {extras = ["asyncio"], version = "^1.4.31, ^2.0.0"}
+SQLAlchemy = {extras = ["asyncio"], version = "<3.0.0,>1.4.0"}
 
 
 [tool.poetry.group.dev.dependencies]
